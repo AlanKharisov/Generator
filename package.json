@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "homepage": "https://AlanKharisov.github.io/Generator",
+  "homepage": "https://AlanKharisov.github.io/Generator/",
   "scripts": {
     "dev": "npx vite",
     "build": "npx vite build",
