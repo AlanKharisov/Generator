@@ -3,5 +3,5 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/Generator/' // обязательно имя репозитория
+  base: '/Generator/' // имя репозитория на GitHub Pages
 })
