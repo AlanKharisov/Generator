@@ -9,39 +9,33 @@ export function ContactSection() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setErrorMsg('');
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsSubmitting(true);
 
-    const form = e.currentTarget;
-    const formData = {
-      name: (form.elements.namedItem('name') as HTMLInputElement).value,
-      email: (form.elements.namedItem('email') as HTMLInputElement).value,
-      message: (form.elements.namedItem('message') as HTMLTextAreaElement).value,
-    };
-
-    try {
-      const res = await fetch('https://generator-contact.alankharisov1.workers.dev', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      if (!res.ok) throw new Error('Failed to send message');
-
-      setIsSuccess(true);
-      form.reset();
-
-      // Скинути повідомлення успіху через 5 секунд
-      setTimeout(() => setIsSuccess(false), 5000);
-    } catch (err) {
-      console.error(err);
-      setErrorMsg('Сталася помилка. Спробуйте пізніше.');
-    } finally {
-      setIsSubmitting(false);
-    }
+  const formData = {
+    name: e.currentTarget.name?.value,
+    email: e.currentTarget.email?.value,
+    message: e.currentTarget.message?.value,
   };
+
+  try {
+    const res = await fetch("https://generator-contact.alankharisov1.workers.dev", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
+
+    if (!res.ok) throw new Error("Failed to send");
+
+    setIsSuccess(true);
+    setTimeout(() => setIsSuccess(false), 5000);
+  } catch (err) {
+    alert("Помилка при відправці, спробуйте ще раз");
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <section id="contact" className="py-20 bg-gray-50">
