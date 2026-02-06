@@ -1,6 +1,6 @@
 export default {
   async fetch(request, env) {
-    // Відповідаємо на preflight OPTIONS (для CORS)
+    // CORS preflight
     if (request.method === "OPTIONS") {
       return new Response(null, {
         headers: {
@@ -11,22 +11,25 @@ export default {
       });
     }
 
-    // Приймаємо тільки POST
     if (request.method !== "POST") {
       return new Response("Only POST allowed", { status: 405 });
     }
 
+    let data;
     try {
-      // Отримуємо дані з форми
-      const data = await request.json();
+      const text = await request.text();
+      if (!text) return new Response("Empty body", { status: 400 });
+      data = JSON.parse(text);
+    } catch (err) {
+      return new Response("Invalid JSON", { status: 400 });
+    }
 
-      // Формуємо текст повідомлення для Telegram
-      const message = `📩 Нова заявка з сайту:
+    const message = `📩 Нова заявка з сайту:
 Ім'я: ${data.name || "не вказано"}
 Телефон/Email: ${data.email || "не вказано"}
 Повідомлення: ${data.message || "не вказано"}`;
 
-      // Надсилаємо у Telegram
+    try {
       const telegramRes = await fetch(
         `https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`,
         {
@@ -40,21 +43,20 @@ export default {
       );
 
       if (!telegramRes.ok) {
-        return new Response("Failed to send message to Telegram", { status: 500 });
+        const text = await telegramRes.text();
+        return new Response("Failed to send to Telegram: " + text, { status: 500 });
       }
 
-      // Відповідь фронтенду (React)
       return new Response(JSON.stringify({ ok: true }), {
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*", // обов'язково для GitHub Pages
+          "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Methods": "POST, OPTIONS",
           "Access-Control-Allow-Headers": "Content-Type",
         },
       });
     } catch (err) {
-      console.error(err);
-      return new Response("Error processing request", { status: 500 });
+      return new Response("Error sending to Telegram", { status: 500 });
     }
   },
 };
