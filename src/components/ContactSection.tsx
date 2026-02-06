@@ -1,61 +1,22 @@
 import React, { useState } from "react";
-import { Phone, Mail, MapPin, Send, MessageCircle } from "lucide-react";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
+import { Textarea } from "./ui/Textarea";
+import { Send } from "lucide-react";
 
-// Повністю контрольована кнопка
-function Button({ children, isLoading = false, ...props }: any) {
-  return (
-    <button
-      className="inline-flex items-center justify-center rounded-lg bg-orange-500 text-white px-6 h-11 text-base transition-all disabled:opacity-50 disabled:pointer-events-none"
-      disabled={isLoading}
-      {...props}
-    >
-      {isLoading && <span className="mr-2 animate-spin">⏳</span>}
-      {children}
-    </button>
-  );
-}
-
-// Контролюваний Input
-function Input({ label, ...props }: any) {
-  return (
-    <div className="w-full">
-      {label && <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>}
-      <input
-        className="flex h-11 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-        {...props}
-      />
-    </div>
-  );
-}
-
-// Контролювана Textarea
-function Textarea({ label, ...props }: any) {
-  return (
-    <div className="w-full">
-      {label && <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>}
-      <textarea
-        className="flex min-h-[120px] w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-        {...props}
-      />
-    </div>
-  );
-}
-
-// Головний компонент ContactSection
 export function ContactSection() {
-  const [formData, setFormData] = useState({ name: "", email: "", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Оновлення state при зміні інпутів
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
-
-  // Відправка форми
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    const formData = {
+      name: e.currentTarget.name.value,
+      email: e.currentTarget.email.value,
+      message: e.currentTarget.message.value,
+    };
 
     try {
       const res = await fetch("https://generator-contact.alankharisov1.workers.dev", {
@@ -64,15 +25,16 @@ export function ContactSection() {
         body: JSON.stringify(formData),
       });
 
-      if (!res.ok) throw new Error("Failed to send");
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(text);
+      }
 
       setIsSuccess(true);
-      setFormData({ name: "", email: "", message: "" });
-
       setTimeout(() => setIsSuccess(false), 5000);
+      e.currentTarget.reset();
     } catch (err) {
-      console.error(err);
-      alert("Помилка при відправці, спробуйте ще раз");
+      alert("Помилка при відправці: " + err.message);
     } finally {
       setIsSubmitting(false);
     }
@@ -80,79 +42,33 @@ export function ContactSection() {
 
   return (
     <section id="contact" className="py-20 bg-gray-50">
-      <div className="container mx-auto px-4 md:px-6 max-w-3xl">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 text-center">
-          Зв'яжіться з нами
-        </h2>
+      <div className="container mx-auto px-4 md:px-6">
+        <div className="text-center max-w-2xl mx-auto mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Зв'яжіться з нами</h2>
+          <p className="text-lg text-gray-600">
+            Залиште заявку на ремонт або отримайте безкоштовну консультацію по телефону.
+          </p>
+        </div>
 
-        {isSuccess ? (
-          <div className="text-center text-green-600">
-            <p className="text-xl font-bold">Дякуємо!</p>
-            <p>Ваша заявка прийнята. Ми зв'яжемося з вами найближчим часом.</p>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <Input
-              name="name"
-              label="Ваше ім'я"
-              placeholder="Олександр"
-              value={formData.name}
-              onChange={handleChange}
-              required
-            />
-            <Input
-              name="email"
-              label="Телефон або Email"
-              placeholder="+38 (0__) ___-__-__ / email@example.com"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-            <Textarea
-              name="message"
-              label="Повідомлення (необов'язково)"
-              placeholder="Опишіть вашу проблему..."
-              value={formData.message}
-              onChange={handleChange}
-            />
-            <Button type="submit" isLoading={isSubmitting}>
-              <Send className="mr-2 h-4 w-4" />
-              Надіслати заявку
-            </Button>
-          </form>
-        )}
-
-        <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="flex items-start">
-            <Phone className="h-6 w-6 text-orange-500 mr-2" />
-            <div>
-              <p className="font-medium">Телефон</p>
-              <p>+38 (000) 000-00-00</p>
+        <div className="max-w-xl mx-auto bg-white p-8 rounded-2xl shadow-lg">
+          {isSuccess ? (
+            <div className="text-center text-green-600">
+              <p className="text-xl font-bold">Дякуємо!</p>
+              <p>Ваша заявка прийнята. Ми зв'яжемося з вами найближчим часом.</p>
             </div>
-          </div>
-          <div className="flex items-start">
-            <MessageCircle className="h-6 w-6 text-blue-500 mr-2" />
-            <div>
-              <p className="font-medium">Telegram / Viber</p>
-              <p>@GeneratorService</p>
-            </div>
-          </div>
-          <div className="flex items-start">
-            <Mail className="h-6 w-6 text-gray-500 mr-2" />
-            <div>
-              <p className="font-medium">Email</p>
-              <p>info@example.com</p>
-            </div>
-          </div>
-          <div className="flex items-start">
-            <MapPin className="h-6 w-6 text-gray-500 mr-2" />
-            <div>
-              <p className="font-medium">Майстерня</p>
-              <p>м. Київ, вул. Промислова, 12</p>
-            </div>
-          </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <Input name="name" label="Ваше ім'я" placeholder="Олександр" required />
+              <Input name="email" label="Телефон/Email" placeholder="+38 (0__) ___-__-__" required />
+              <Textarea name="message" label="Повідомлення (необов'язково)" placeholder="Опишіть проблему..." rows={4} />
+              <Button type="submit" className="w-full" size="lg" isLoading={isSubmitting}>
+                <Send className="mr-2 h-4 w-4" /> Надіслати заявку
+              </Button>
+            </form>
+          )}
         </div>
       </div>
     </section>
   );
 }
+
