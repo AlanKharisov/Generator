@@ -1,6 +1,6 @@
 export default {
   async fetch(request, env) {
-    // Відповідаємо на preflight OPTIONS (для CORS)
+    // CORS для preflight
     if (request.method === "OPTIONS") {
       return new Response(null, {
         headers: {
@@ -11,28 +11,22 @@ export default {
       });
     }
 
-    // Приймаємо тільки POST
     if (request.method !== "POST") {
       return new Response("Only POST allowed", { status: 405 });
     }
 
     let data;
     try {
-      // Перевіряємо, що тіло точно є
       const text = await request.text();
-      if (!text) {
-        return new Response("Empty body", { status: 400 });
-      }
-
+      if (!text) return new Response("Empty body", { status: 400 });
       data = JSON.parse(text);
     } catch (err) {
       return new Response("Invalid JSON", { status: 400 });
     }
 
-    // Формуємо повідомлення
     const message = `📩 Нова заявка з сайту:
 Ім'я: ${data.name || "не вказано"}
-Телефон/Email: ${data.email || "не вказано"}
+Email: ${data.email || "не вказано"}
 Повідомлення: ${data.message || "не вказано"}`;
 
     try {
@@ -49,7 +43,7 @@ export default {
       );
 
       if (!telegramRes.ok) {
-        return new Response("Failed to send message to Telegram", { status: 500 });
+        return new Response("Failed to send to Telegram", { status: 500 });
       }
 
       return new Response(JSON.stringify({ ok: true }), {
@@ -61,7 +55,6 @@ export default {
         },
       });
     } catch (err) {
-      console.error(err);
       return new Response("Error sending to Telegram", { status: 500 });
     }
   },
