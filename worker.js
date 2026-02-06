@@ -1,26 +1,60 @@
-addEventListener('fetch', event => {
-  event.respondWith(handleRequest(event.request))
-})
+export default {
+  async fetch(request, env) {
+    // Відповідаємо на preflight OPTIONS (для CORS)
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+      });
+    }
 
-async function handleRequest(request) {
-  if (request.method !== 'POST') {
-    return new Response('Only POST allowed', { status: 405 })
-  }
+    // Приймаємо тільки POST
+    if (request.method !== "POST") {
+      return new Response("Only POST allowed", { status: 405 });
+    }
 
-  const data = await request.json()
+    try {
+      // Отримуємо дані з форми
+      const data = await request.json();
 
-  // Встав сюди свій BOT_TOKEN і CHAT_ID як змінні середовища
-  const token = BOT_TOKEN // встав через Cloudflare secrets
-  const chat_id = CHAT_ID
+      // Формуємо текст повідомлення для Telegram
+      const message = `📩 Нова заявка з сайту:
+Ім'я: ${data.name || "не вказано"}
+Телефон/Email: ${data.email || "не вказано"}
+Повідомлення: ${data.message || "не вказано"}`;
 
-  await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id,
-      text: `Нова заявка!\nІм'я: ${data.name}\nТелефон: ${data.phone}\nПовідомлення: ${data.message}`
-    })
-  })
+      // Надсилаємо у Telegram
+      const telegramRes = await fetch(
+        `https://api.telegram.org/bot${env.BOT_TOKEN}/sendMessage`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            chat_id: env.CHAT_ID,
+            text: message,
+          }),
+        }
+      );
 
-  return new Response(JSON.stringify({ ok: true }))
-}
+      if (!telegramRes.ok) {
+        return new Response("Failed to send message to Telegram", { status: 500 });
+      }
+
+      // Відповідь фронтенду (React)
+      return new Response(JSON.stringify({ ok: true }), {
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*", // обов'язково для GitHub Pages
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+      });
+    } catch (err) {
+      console.error(err);
+      return new Response("Error processing request", { status: 500 });
+    }
+  },
+};
