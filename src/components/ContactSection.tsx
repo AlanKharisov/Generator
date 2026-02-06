@@ -14,7 +14,6 @@ export function ContactSection() {
     setIsSubmitting(true);
     setErrorMsg('');
 
-    // Беремо дані форми через FormData
     const form = e.currentTarget;
     const formData = new FormData(form);
     const data = {
@@ -26,10 +25,8 @@ export function ContactSection() {
     try {
       const res = await fetch('https://generator-contact.alankharisov1.workers.dev/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data), // Обов'язково JSON
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
       });
 
       if (!res.ok) {
@@ -38,9 +35,9 @@ export function ContactSection() {
       }
 
       setIsSuccess(true);
-      form.reset(); // Очищаємо форму після успіху
+      form.reset();
       setTimeout(() => setIsSuccess(false), 5000);
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
       setErrorMsg('Помилка при відправці. Спробуйте ще раз.');
     } finally {
