@@ -1,14 +1,13 @@
-import React from "react";
+import React from 'react';
 
 interface TextareaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string;
   error?: string;
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
 }
 
-export function Textarea({ label, error, id, value, onChange, ...props }: TextareaProps) {
+export function Textarea({ label, error, className = '', id, ...props }: TextareaProps) {
   const textareaId = id || props.name;
+
   return (
     <div className="w-full">
       {label && (
@@ -18,13 +17,11 @@ export function Textarea({ label, error, id, value, onChange, ...props }: Textar
       )}
       <textarea
         id={textareaId}
-        value={value}
-        onChange={onChange}
         className={`
-          flex min-h-[120px] w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm placeholder:text-gray-400 
-          focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all
-          disabled:cursor-not-allowed disabled:opacity-50
-          ${error ? "border-red-500 focus:ring-red-500" : ""}
+          flex min-h-[120px] w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm
+          placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500
+          focus:border-transparent transition-all disabled:cursor-not-allowed disabled:opacity-50
+          ${error ? 'border-red-500 focus:ring-red-500' : ''} ${className}
         `}
         {...props}
       />
