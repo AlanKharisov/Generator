@@ -1,45 +1,53 @@
-import React, { useState } from 'react';
-import { Button } from './ui/Button';
-import { Input } from './ui/Input';
-import { Textarea } from './ui/Textarea';
-import { Send } from 'lucide-react';
+import React, { useState } from "react";
+import { Button } from "./ui/Button";
+import { Input } from "./ui/Input";
+import { Textarea } from "./ui/Textarea";
+import { Send } from "lucide-react";
 
 export function ContactSection() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setErrorMsg('');
+    setErrorMsg("");
 
     const form = e.currentTarget;
     const formData = new FormData(form);
     const data = {
-      name: formData.get('name')?.toString() || '',
-      email: formData.get('email')?.toString() || '',
-      message: formData.get('message')?.toString() || '',
+      name: formData.get("name")?.toString() || "",
+      email: formData.get("email")?.toString() || "",
+      message: formData.get("message")?.toString() || "",
     };
 
     try {
-      const res = await fetch('https://generator-contact.alankharisov1.workers.dev/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+      const res = await fetch(
+        "https://generator-contact.alankharisov1.workers.dev/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        }
+      );
 
       if (!res.ok) {
         const text = await res.text();
         throw new Error(`Worker помилка: ${res.status} ${text}`);
       }
 
+      // Якщо Worker відповів ok: true
       setIsSuccess(true);
       form.reset();
       setTimeout(() => setIsSuccess(false), 5000);
     } catch (err) {
       console.error(err);
-      setErrorMsg('Помилка при відправці. Спробуйте ще раз.');
+      setErrorMsg(
+        "Помилка при відправці. Перевірте інтернет або спробуйте ще раз."
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -48,7 +56,9 @@ export function ContactSection() {
   return (
     <section className="py-20 bg-gray-50">
       <div className="container mx-auto px-4 md:px-6">
-        <h2 className="text-3xl font-bold text-gray-900 mb-6">Зв'яжіться з нами</h2>
+        <h2 className="text-3xl font-bold text-gray-900 mb-6">
+          Зв'яжіться з нами
+        </h2>
 
         {isSuccess && (
           <div className="mb-6 p-4 bg-green-100 rounded">
@@ -59,7 +69,11 @@ export function ContactSection() {
         <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
           <Input name="name" label="Ваше ім'я" required />
           <Input name="email" label="Телефон або Email" required />
-          <Textarea name="message" label="Повідомлення (необов'язково)" rows={4} />
+          <Textarea
+            name="message"
+            label="Повідомлення (необов'язково)"
+            rows={4}
+          />
 
           {errorMsg && <p className="text-red-500">{errorMsg}</p>}
 
