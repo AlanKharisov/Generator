@@ -1,10 +1,9 @@
 name = "generator-contact"
 compatibility_date = "2026-02-06"
 
-# Вказуємо Worker скрипт
+# Основний скрипт Worker
 main = "worker.js"
 
-# Додаємо фронтенд
+# Папка фронтенду (dist)
 [site]
 bucket = "./dist"
-entry-point = "."
