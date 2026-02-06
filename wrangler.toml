@@ -1,0 +1,7 @@
+name = "generator-contact"
+main = "worker.js" # сюди твій Worker-код, який обробляє POST
+compatibility_date = "2026-02-06"
+
+[site]
+bucket = "./dist"
+entry-point = "."  # якщо worker.js в корені
