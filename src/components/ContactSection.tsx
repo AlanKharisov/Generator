@@ -1,49 +1,47 @@
-import React, { useState } from 'react'
-import { Phone, Mail, MapPin, Send, MessageCircle } from 'lucide-react'
-import { Button } from './ui/Button'
-import { Input } from './ui/Input'
-import { Textarea } from './ui/Textarea'
-
-const API_URL = 'https://generator-contact.alankharisov1.workers.dev/send'
+import React, { useState } from 'react';
+import { Phone, Mail, MapPin, Send, MessageCircle } from 'lucide-react';
+import { Button } from './ui/Button';
+import { Input } from './ui/Input';
+import { Textarea } from './ui/Textarea';
 
 export function ContactSection() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isSuccess, setIsSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    setError(null)
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrorMsg('');
 
-    const form = e.currentTarget
-    const formData = new FormData(form)
-
-    const payload = {
-      name: formData.get('name'),
-      phone: formData.get('phone'),
-      message: formData.get('message')
-    }
+    const form = e.currentTarget;
+    const formData = {
+      name: (form.elements.namedItem('name') as HTMLInputElement).value,
+      email: (form.elements.namedItem('email') as HTMLInputElement).value,
+      message: (form.elements.namedItem('message') as HTMLTextAreaElement).value,
+    };
 
     try {
-      const res = await fetch(API_URL, {
+      const res = await fetch('https://generator-contact.alankharisov1.workers.dev', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
+        body: JSON.stringify(formData),
+      });
 
-      if (!res.ok) throw new Error('Network error')
+      if (!res.ok) throw new Error('Failed to send message');
 
-      setIsSuccess(true)
-      form.reset()
+      setIsSuccess(true);
+      form.reset();
 
-      setTimeout(() => setIsSuccess(false), 5000)
+      // Скинути повідомлення успіху через 5 секунд
+      setTimeout(() => setIsSuccess(false), 5000);
     } catch (err) {
-      setError('Помилка відправки. Спробуйте пізніше.')
+      console.error(err);
+      setErrorMsg('Сталася помилка. Спробуйте пізніше.');
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <section id="contact" className="py-20 bg-gray-50">
@@ -53,79 +51,93 @@ export function ContactSection() {
             Зв'яжіться з нами
           </h2>
           <p className="text-lg text-gray-600">
-            Залиште заявку на ремонт або отримайте безкоштовну консультацію
+            Залиште заявку на ремонт або отримайте безкоштовну консультацію по телефону.
           </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
-          {/* INFO */}
-          <div className="space-y-8">
-            <InfoItem icon={<Phone />} title="Телефон" text="+38 (000) 000-00-00" />
-            <InfoItem icon={<MessageCircle />} title="Telegram" text="@GeneratorService" />
-            <InfoItem icon={<Mail />} title="Email" text="info@example.com" />
-            <InfoItem icon={<MapPin />} title="Адреса" text="м. Київ, вул. Промислова, 12" />
+          {/* Ліва частина: контакти */}
+          <div className="flex flex-col justify-between space-y-8">
+            <ContactInfo icon={Phone} title="Телефон" text="Телефонуйте нам щодня з 8:00 до 20:00" link="tel:+380000000000" display="+38 (000) 000-00-00" color="orange" />
+            <ContactInfo icon={MessageCircle} title="Telegram / Viber" text="Пишіть нам у месенджери 24/7" link="#" display="@GeneratorService" color="blue" />
+            <ContactInfo icon={Mail} title="Email" text="Для комерційних пропозицій" link="mailto:info@example.com" display="info@example.com" color="gray" />
+            <ContactInfo icon={MapPin} title="Майстерня" text="м. Київ, вул. Промислова, 12 (за попереднім записом)" />
           </div>
 
-          {/* FORM */}
+          {/* Права частина: форма */}
           <div className="bg-white rounded-2xl shadow-xl p-8 md:p-10 border border-gray-100">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">
               Замовити дзвінок
             </h3>
 
             {isSuccess ? (
-              <SuccessBlock onReset={() => setIsSuccess(false)} />
+              <div className="flex flex-col items-center justify-center h-[300px] text-center animate-in fade-in zoom-in duration-300">
+                <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <CheckCircle2 className="h-8 w-8 text-green-600" />
+                </div>
+                <h4 className="text-xl font-bold text-gray-900 mb-2">
+                  Дякуємо!
+                </h4>
+                <p className="text-gray-600">
+                  Ваша заявка прийнята. Ми зв'яжемося з вами найближчим часом.
+                </p>
+                <Button variant="outline" className="mt-6" onClick={() => setIsSuccess(false)}>
+                  Надіслати ще
+                </Button>
+              </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
-                <Input name="name" label="Ваше ім'я" required />
-                <Input name="phone" label="Телефон" type="tel" required />
-                <Textarea name="message" label="Повідомлення" rows={4} />
+                <Input name="name" label="Ваше ім'я" placeholder="Олександр" required />
+                <Input name="email" label="Телефон" type="tel" placeholder="+38 (0__) ___-__-__" required />
+                <Textarea name="message" label="Повідомлення (необов'язково)" placeholder="Опишіть проблему з генератором..." rows={4} />
 
-                {error && <p className="text-sm text-red-600">{error}</p>}
+                {errorMsg && <p className="text-red-500 text-sm">{errorMsg}</p>}
 
-                <Button
-                  type="submit"
-                  className="w-full"
-                  size="lg"
-                  isLoading={isSubmitting}
-                >
+                <Button type="submit" className="w-full" size="lg" isLoading={isSubmitting}>
                   <Send className="mr-2 h-4 w-4" />
                   Надіслати заявку
                 </Button>
+
+                <p className="text-xs text-center text-gray-500 mt-4">
+                  Натискаючи кнопку, ви погоджуєтесь на обробку персональних даних
+                </p>
               </form>
             )}
           </div>
         </div>
       </div>
     </section>
-  )
+  );
 }
 
-/* helpers */
+// Компонент для відображення контактної інформації
+function ContactInfo({ icon: Icon, title, text, link, display, color }: { icon: any, title: string, text: string, link?: string, display?: string, color?: 'orange' | 'blue' | 'gray' }) {
+  const bgColor = color === 'orange' ? 'bg-orange-100 text-orange-600' :
+                  color === 'blue' ? 'bg-blue-100 text-blue-600' :
+                  'bg-gray-200 text-gray-700';
 
-function InfoItem({ icon, title, text }: any) {
   return (
-    <div className="flex items-start gap-4">
-      <div className="h-12 w-12 flex items-center justify-center rounded-lg bg-orange-100 text-orange-600">
-        {icon}
+    <div className="flex items-start">
+      <div className={`flex-shrink-0 h-12 w-12 rounded-lg flex items-center justify-center ${bgColor}`}>
+        <Icon className="h-6 w-6" />
       </div>
-      <div>
-        <h4 className="font-bold">{title}</h4>
-        <p className="text-gray-600">{text}</p>
+      <div className="ml-6">
+        <h3 className="text-lg font-bold text-gray-900 mb-1">{title}</h3>
+        <p className="text-gray-600 mb-2">{text}</p>
+        {link && display && (
+          <a href={link} className={`text-lg font-medium hover:text-${color}-600 transition-colors`}>{display}</a>
+        )}
       </div>
     </div>
-  )
+  );
 }
 
-function SuccessBlock({ onReset }: { onReset: () => void }) {
+// Іконка успішного надсилання
+function CheckCircle2({ className }: { className?: string }) {
   return (
-    <div className="text-center py-20">
-      <h4 className="text-xl font-bold mb-2">Дякуємо!</h4>
-      <p className="text-gray-600 mb-6">
-        Ми зв'яжемося з вами найближчим часом
-      </p>
-      <Button variant="outline" onClick={onReset}>
-        Надіслати ще
-      </Button>
-    </div>
-  )
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="m9 12 2 2 4-4" />
+    </svg>
+  );
 }
